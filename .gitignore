@@ -1,0 +1,19 @@
+# CMake / build output
+build/
+out/
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+
+# Compiled files
+*.exe
+*.o
+*.obj
+*.a
+*.dll
+*.pdb
+
+# Editor / tooling (Neovim, clangd)
+.cache/
+compile_commands.json
+*.swp
