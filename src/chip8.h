@@ -15,10 +15,13 @@ typedef struct {
     uint8_t keypad;
     uint8_t video[64 * 32];
     uint16_t opcode;
+    
 } Chip8;
 
 void chip8_init(Chip8 *c); //initializes the struct in real computer memory
 
 int chip8_load(Chip8 *c, const char *filename); //Loads the rom data into chip8 emulated memory
+
+uint8_t chip8_randGen(Chip8 *c); //Generates a random byte
 
 #endif

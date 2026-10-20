@@ -1,10 +1,12 @@
 #include "chip8.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h> 
+#include <time.h>
 
 #define START 0x200 // Startng address in chip8 emulated memory
-#define FONTSET_START 0x50
-#define FONTSET_SIZE 80
+#define FONTSET_START 0x50 // Starting address of font sprites
+#define FONTSET_SIZE 80 // Size of fontset array in bytes
 
 //All the characters, represented in hexadecimal
 uint8_t fontset[FONTSET_SIZE] = {
@@ -30,9 +32,16 @@ void chip8_init(Chip8 *c){
     memset(c, 0, sizeof(*c));
     c->program_counter = START;
 
-    for (unsigned int i; i<FONTSET_SIZE; ++i){
-	c->memory[FONTSET_START + i] = fontset[i];
+    //loads the font sprites into memory
+    for (unsigned int i = 0; i<FONTSET_SIZE; ++i){
+        c->memory[FONTSET_START + i] = fontset[i];
     }
+
+    srand((unsigned)time(NULL));
+}
+
+uint8_t chip8_randGen(Chip8 *c){
+    return (rand() % (256));
 }
 
 int chip8_load(Chip8 *c, const char *filename){
