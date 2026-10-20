@@ -1,5 +1,6 @@
 #include "raylib.h"
 
+//This is boilerplate code for now while the chip8 is being devloped
 int main(void) {
     InitWindow(500, 500, "raylib window");
     SetTargetFPS(60);
