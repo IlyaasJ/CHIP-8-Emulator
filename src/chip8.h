@@ -29,6 +29,27 @@ uint8_t chip8_randGen(Chip8 *c); //Generates a random byte
 //Clears display
 void op_00E0(Chip8 *c);
 
+//Return from subroutine by poping from the stack and setting pc to the top
 void op_00EE(Chip8 *c);
 
+//Sets the program counter to addres NNN
+void op_1NNN(Chip8 *c);
+
+//Pushes the current PC onto the stack then gose into a subroutine by setting PC to NNN
+void op_2NNN(Chip8 *c);
+
+//Skips next instruction if register x == kk (which is a byte) a if statment
+void op_3XKK(Chip8 *c);
+
+//Skips next instruction if register x != kk 
+void op_4XKK(Chip8 *c);
+
+//Skips next instruction if register x == register k
+void op_5XY0(Chip8 *c);
+
+//Sets register x to kk
+void op_6XKK(Chip8 *c);
+
+//add kk to the value of register x, then set register x to that sum
+void op_7XKK(Chip8 *c);
 #endif

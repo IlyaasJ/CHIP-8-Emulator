@@ -61,4 +61,67 @@ void op_00E0(Chip8 *c) {
 
 void op_00EE(Chip8 *c) {
     c->stack_pointer -= 1;
+    c->program_counter = c->stack[c->stack_pointer];
 }
+
+void op_1NNN(Chip8 *c) {
+   uint16_t address = c->opcode & 0x0FFF;
+   c->program_counter = address;
+}
+
+void op_2NNN(Chip8 *c) {
+    uint16_t address = c->opcode & 0x0FFF;
+
+    c->stack[c->stack_pointer] = c->program_counter;
+    c->stack_pointer += 1;
+
+    c->program_counter = address;
+}
+
+void op_3XKK(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t kk = c->opcode & 0x00FF; 
+
+    if (c->registers[x] == kk)
+    {
+	c->program_counter += 2;
+    }
+}
+
+void op_4XKK(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t kk = c->opcode & 0x00FF; 
+
+    if (c->registers[x] != kk)
+    {
+	c->program_counter += 2;
+    }
+}
+
+void op_5XY0(Chip8 *c) {
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t y = (c->opcode & 0x00F0) >> 4;
+
+    if (c->registers[x] == c->registers[y])
+    {
+	c->program_counter += 2;
+    }
+}
+
+void op_6XKK(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t kk = (c->opcode & 0x00FF);
+
+    c->registers[x] = kk;
+}
+
+void op_7XKK(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t kk = (c->opcode & 0x00FF);
+
+    //Once 255 is passed, it wraps back to 0, a design of chip8
+    c->registers[x] += kk;
+}
+
+
+
