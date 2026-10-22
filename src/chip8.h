@@ -24,4 +24,11 @@ int chip8_load(Chip8 *c, const char *filename); //Loads the rom data into chip8 
 
 uint8_t chip8_randGen(Chip8 *c); //Generates a random byte
 
+//All the opcode functions
+
+//Clears display
+void op_00E0(Chip8 *c);
+
+void op_00EE(Chip8 *c);
+
 #endif

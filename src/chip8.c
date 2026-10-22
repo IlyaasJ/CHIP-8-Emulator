@@ -54,3 +54,11 @@ int chip8_load(Chip8 *c, const char *filename){
 
     return n > 0;
 }
+
+void op_00E0(Chip8 *c) {
+    memset(c->video, 0, sizeof(c->video));
+}
+
+void op_00EE(Chip8 *c) {
+    c->stack_pointer -= 1;
+}
