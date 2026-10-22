@@ -1,7 +1,5 @@
 #include "chip8.h"
-#include <stdlib.h> 
 #include <stdio.h>
-#include <time.h>
 #include "raylib.h"
 
 //This is boilerplate code for now while the chip8 is being devloped
