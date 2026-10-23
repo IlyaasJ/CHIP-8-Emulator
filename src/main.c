@@ -1,6 +1,6 @@
-#include "chip8.h"
 #include <stdio.h>
 #include "raylib.h"
+#include "chip8.h"
 
 //This is boilerplate code for now while the chip8 is being devloped
 int main(void) {
@@ -8,7 +8,6 @@ int main(void) {
     Chip8 newChip8;
     printf("Hello");
     //chip8_init(&newChip8);
-
 
     InitWindow(500, 500, "raylib window");
     SetTargetFPS(60);

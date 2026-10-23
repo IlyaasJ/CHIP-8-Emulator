@@ -1,8 +1,8 @@
-#include "chip8.h"
 #include <string.h>
-#include <stdio.h>
 #include <stdlib.h> 
 #include <time.h>
+#include <stdio.h>
+#include "chip8.h"
 
 #define START 0x200 // Startng address in chip8 emulated memory
 #define FONTSET_START 0x50 // Starting address of font sprites
@@ -40,7 +40,7 @@ void chip8_init(Chip8 *c){
     srand((unsigned)time(NULL));
 }
 
-uint8_t chip8_randGen(Chip8 *c){
+uint8_t chip8_randByte(void){
     return (rand() % (256));
 }
 
@@ -121,6 +121,118 @@ void op_7XKK(Chip8 *c){
 
     //Once 255 is passed, it wraps back to 0, a design of chip8
     c->registers[x] += kk;
+}
+
+void op_8XY0(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t y = (c->opcode & 0x00F0) >> 4;
+
+    c->registers[x] = c->registers[y];
+}
+
+void op_8XY1(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t y = (c->opcode & 0x00F0) >> 4;
+    
+    c->registers[x] |= c->registers[y];
+}
+
+void op_8XY2(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t y = (c->opcode & 0x00F0) >> 4;
+    
+    c->registers[x] &= c->registers[y];
+}
+
+void op_8XY3(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t y = (c->opcode & 0x00F0) >> 4;
+    
+    c->registers[x] ^= c->registers[y];
+}
+
+void op_8XY4(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t y = (c->opcode & 0x00F0) >> 4;
+    
+    uint16_t sum = c->registers[x] + c->registers[y];
+
+    c->registers[x] = sum & 0xFF;
+    c->registers[0xF] = (sum > 0xFF);
+}
+
+void op_8XY5(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t y = (c->opcode & 0x00F0) >> 4;
+
+    uint8_t Vx = c->registers[x];
+    uint8_t Vy = c->registers[y];
+
+    c->registers[x] = (Vx - Vy); 
+    c->registers[0xF] = (Vx >= Vy);
+}
+
+void op_8XY6(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+
+    uint8_t Vx = c->registers[x];
+
+
+    c->registers[x] = Vx >> 1;
+    c->registers[0xF] = (Vx & 0x1);
+}
+
+void op_8XY7(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t y = (c->opcode & 0x00F0) >> 4;
+
+    uint8_t Vx = c->registers[x];
+    uint8_t Vy = c->registers[y];
+
+    c->registers[x] = Vy - Vx;
+    c->registers[0xF] = (Vy >= Vx);
+}
+
+
+void op_8XYE(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+
+    uint8_t Vx = c->registers[x];
+
+    c->registers[x] = Vx << 1;
+    c->registers[0xF] = (Vx & 0x80) >> 7;
+}
+
+void op_9XY0(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t y = (c->opcode & 0x00F0) >> 4;
+
+    uint8_t Vx = c->registers[x];
+    uint8_t Vy = c->registers[y];
+
+    if (Vx != Vy) {
+	c->program_counter += 2;
+    }
+}
+
+void op_ANNN(Chip8 *c){
+    uint16_t address = (c->opcode & 0x0FFF);
+
+    c->index_register = address;
+}
+
+void op_BNNN(Chip8 *c){
+    uint16_t address = (c->opcode & 0x0FFF);
+    uint8_t V0 = c->registers[0];
+
+    c->program_counter = (address + V0);
+}
+
+void op_CXKK(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t kk = (c->opcode & 0x00FF);
+
+    c->registers[x] = (chip8_randByte() & kk);
 }
 
 
