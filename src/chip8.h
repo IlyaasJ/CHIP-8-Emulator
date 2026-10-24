@@ -92,5 +92,9 @@ void op_BNNN(Chip8 *c);
 //a random byte is AND'ed with the bytes at kk and set to Vx
 void op_CXKK(Chip8 *c);
 
+//Displays sprite(n bytes of memory past index register, n rows, 8 columns for sprite) at Vx, Vy
+//Sprite is XOR'ed onto screen, Sets VF flag if pixel is erased during XOR, wraps sprites back if
+//out of bounds
+void op_DXYN(Chip8 *c);
 
 #endif

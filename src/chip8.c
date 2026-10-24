@@ -235,5 +235,26 @@ void op_CXKK(Chip8 *c){
     c->registers[x] = (chip8_randByte() & kk);
 }
 
+void op_DXYN(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t y = (c->opcode & 0x00F0) >> 4;
+
+    uint8_t Vx = c->registers[x];
+    uint8_t Vy = c->registers[y];
+    uint8_t totalRows = (c->opcode & 0x000F);
+
+    //TODO
+    //Account for wrapping beyond boundries
+
+    c->registers[0xF] = 0;
+
+    for (unsigned int row = 0; row < totalRows; ++row){
+	uint8_t spriteByte = c->memory[c->index_register + row];
+
+	//TODO
+	//Get sprite pixel, screen pixel, XOR, check collision, set flag
+    }
+}
+
 
 
