@@ -239,20 +239,27 @@ void op_DXYN(Chip8 *c){
     uint8_t x = (c->opcode & 0x0F00) >> 8;
     uint8_t y = (c->opcode & 0x00F0) >> 4;
 
-    uint8_t Vx = c->registers[x];
-    uint8_t Vy = c->registers[y];
+    uint8_t xPos = c->registers[x] % 64;
+    uint8_t yPos = c->registers[y] % 32; //TODO: Define screen height and width above
     uint8_t totalRows = (c->opcode & 0x000F);
-
-    //TODO
-    //Account for wrapping beyond boundries
-
+    
     c->registers[0xF] = 0;
 
     for (unsigned int row = 0; row < totalRows; ++row){
-	uint8_t spriteByte = c->memory[c->index_register + row];
+        uint8_t spriteByte = c->memory[c->index_register + row];
+        
+        for (unsigned int col = 0; col < 8; ++col){
+            uint8_t spritePixel = spriteByte & (0x80 >> col);
+            uint8_t *screenPixel = &c->video[(yPos + row) * 64 + (xPos + col)];
 
-	//TODO
-	//Get sprite pixel, screen pixel, XOR, check collision, set flag
+            if (spritePixel){
+                if(*screenPixel){
+                    c->registers[0xF] = 1;
+                }
+
+                *screenPixel ^= (0xFF);
+            }
+        }
     }
 }
 
