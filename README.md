@@ -1,9 +1,8 @@
 <h1 align="center">CHIP-8 Emulator</h1>
 
 <p align="center">
-  A CHIP-8 emulator written in C, All 35 opcodes implemented, using <a href="https://www.raylib.com/">raylib</a> for graphics and input.
-  <br>
-  still a work in progress currently
+  A CHIP-8 emulator written in C, All 35 opcodes implemented, using <a href="https://www.raylib.com/">raylib</a> for graphics and input, including 4 classic CHIP-8 games
+  <img src="SpaceInvaders.gif" alt="Space Invaders running in the emulator">
 </p>
 
 ## Dependencies
