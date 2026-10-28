@@ -3,12 +3,12 @@
 #include "chip8.h"
 
 #define video_scale 15
-#define cycles_per_frame 10
+#define cycles_per_frame 15
 
 int main(void) {
     Chip8 emulator;
     chip8_init(&emulator);
-    if (!chip8_load(&emulator, "../ROMS/test_opcode.ch8")) {
+    if (!chip8_load(&emulator, "../ROMS/Tic-Tac-Toe.ch8")) {
        printf("Failed to load ROM\n");
        return 1;
     }
