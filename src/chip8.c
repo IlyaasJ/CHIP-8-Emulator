@@ -109,13 +109,6 @@ void chip8_cycle(Chip8 *c){
     //Decode
     c->table[(c->opcode & 0xF000) >> 12](c);
 
-    if (c->delay_timer){
-	c->delay_timer -= 1;
-    }
-
-    if (c->sound_timer){
-	c->sound_timer -= 1;
-    }
 }
 
 int chip8_load(Chip8 *c, const char *filename){
@@ -148,6 +141,11 @@ void TableF(Chip8 *c){
 
 
 //opcode definitions
+
+void op_NULL(Chip8 *c){
+    (void) c;
+}
+
 void op_00E0(Chip8 *c) {
     memset(c->video, 0, sizeof(c->video));
 }

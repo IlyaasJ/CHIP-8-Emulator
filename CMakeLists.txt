@@ -7,5 +7,5 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(raylib REQUIRED)
 
-add_executable(app src/main.c)
+add_executable(app src/main.c src/chip8.c src/chip8.h)
 target_link_libraries(app PRIVATE raylib)
