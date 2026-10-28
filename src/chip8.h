@@ -3,7 +3,9 @@
 
 #include <stdint.h>
 
-typedef struct {
+typedef struct Chip8 Chip8;
+typedef void (*Chip8Func)(Chip8 *);
+struct Chip8 {
     uint8_t memory[4096];
     uint8_t registers[16];
     uint16_t index_register;
@@ -15,16 +17,31 @@ typedef struct {
     uint8_t keypad[16];
     uint8_t video[64 * 32];
     uint16_t opcode;
+
+    //All function pointers
+    Chip8Func table[0xF + 1];
+    Chip8Func table0[0xF + 1];
+    Chip8Func table8[0xF + 1];
+    Chip8Func tableE[0xF + 1];
+    Chip8Func tableF[0xFF + 1];
     
-} Chip8;
+};
 
 void chip8_init(Chip8 *c); //initializes the struct in real computer memory
+
+void chip8_cycle(Chip8 *c);
 
 int chip8_load(Chip8 *c, const char *filename); //Loads the rom data into chip8 emulated memory
 
 uint8_t chip8_randByte(void); //Generates a random byte
 
+void Table0(Chip8 *c);
+void Table8(Chip8 *c);
+void TableE(Chip8 *c);
+void TableF(Chip8 *c);
+
 //All the opcode functions
+void op_NULL(Chip8 *c);
 
 //Clears display
 void op_00E0(Chip8 *c);
@@ -96,5 +113,39 @@ void op_CXKK(Chip8 *c);
 //Sprite is XOR'ed onto screen, Sets VF flag if pixel is erased during XOR, wraps sprites back if
 //out of bounds
 void op_DXYN(Chip8 *c);
+
+//If the key in register x is pressed, skip next intruction (pc += 2) else, pass
+void op_EX9E(Chip8 *c);
+
+//same as opcode above, however skip if the key is not pressed
+void op_EXA1(Chip8 *c);
+
+//set register x to delay timer value
+void op_FX07(Chip8 *c);
+
+//Wait for a key a key press, store value in Vx, 
+void op_FX0A(Chip8 *c);
+
+//Set delay timer to Vx
+void op_FX15(Chip8 *c);
+
+//Set sound timer to Vx
+void op_FX18(Chip8 *c);
+
+//Set the I to I + Vx
+void op_FX1E(Chip8 *c);
+
+//Set the Index register to the location of sprite digit(Vx) in fonts holding digit sprites
+void op_FX29(Chip8 *c);
+
+//Get the value in Vx, and store the values hundreds digit, tens digit, ones digit into I, I+1 and I+2 for in that order
+void op_FX33(Chip8 *c);
+
+//Store the values in registers 0 - x into memory starting from address in register index
+void op_FX55(Chip8 *c);
+
+//Read the values of memory starting from index register into registers 0 - x
+void op_FX65(Chip8 *c);
+
 
 #endif

@@ -38,10 +38,84 @@ void chip8_init(Chip8 *c){
     }
 
     srand((unsigned)time(NULL));
+
+    // Main table (indexed by first digit)
+    c->table[0x0] = Table0;
+    c->table[0x1] = op_1NNN;
+    c->table[0x2] = op_2NNN;
+    c->table[0x3] = op_3XKK;
+    c->table[0x4] = op_4XKK;
+    c->table[0x5] = op_5XY0;
+    c->table[0x6] = op_6XKK;
+    c->table[0x7] = op_7XKK;
+    c->table[0x8] = Table8;
+    c->table[0x9] = op_9XY0;
+    c->table[0xA] = op_ANNN;
+    c->table[0xB] = op_BNNN;
+    c->table[0xC] = op_CXKK;
+    c->table[0xD] = op_DXYN;
+    c->table[0xE] = TableE;
+    c->table[0xF] = TableF;
+
+    // Fill every sub-table slot with the no-op first
+    for (size_t i = 0; i < 16; ++i) {
+	c->table0[i] = op_NULL;
+	c->table8[i] = op_NULL;
+	c->tableE[i] = op_NULL;
+    }
+    for (size_t i = 0; i < 256; ++i) {
+	c->tableF[i] = op_NULL;
+    }
+
+    // Then overwrite the real entries
+    c->table0[0x0] = op_00E0;
+    c->table0[0xE] = op_00EE;
+
+    c->table8[0x0] = op_8XY0;
+    c->table8[0x1] = op_8XY1;
+    c->table8[0x2] = op_8XY2;
+    c->table8[0x3] = op_8XY3;
+    c->table8[0x4] = op_8XY4;
+    c->table8[0x5] = op_8XY5;
+    c->table8[0x6] = op_8XY6;
+    c->table8[0x7] = op_8XY7;
+    c->table8[0xE] = op_8XYE;
+
+    c->tableE[0x1] = op_EXA1;
+    c->tableE[0xE] = op_EX9E;
+
+    c->tableF[0x07] = op_FX07;
+    c->tableF[0x0A] = op_FX0A;
+    c->tableF[0x15] = op_FX15;
+    c->tableF[0x18] = op_FX18;
+    c->tableF[0x1E] = op_FX1E;
+    c->tableF[0x29] = op_FX29;
+    c->tableF[0x33] = op_FX33;
+    c->tableF[0x55] = op_FX55;
+    c->tableF[0x65] = op_FX65; 
 }
 
 uint8_t chip8_randByte(void){
     return (rand() % (256));
+}
+
+void chip8_cycle(Chip8 *c){
+    // Fetch
+    c->opcode = (c->memory[c->program_counter] << 8) | (c->memory[c->program_counter + 1]);
+
+    //Move
+    c->program_counter += 2;
+
+    //Decode
+    c->table[(c->opcode & 0xF000) >> 12](c);
+
+    if (c->delay_timer){
+	c->delay_timer -= 1;
+    }
+
+    if (c->sound_timer){
+	c->sound_timer -= 1;
+    }
 }
 
 int chip8_load(Chip8 *c, const char *filename){
@@ -55,6 +129,25 @@ int chip8_load(Chip8 *c, const char *filename){
     return n > 0;
 }
 
+//Table functions
+void Table0(Chip8 *c){
+    c->table0[c->opcode & 0x000F](c);
+}
+
+void Table8(Chip8 *c){
+    c->table8[c->opcode & 0x000F](c);
+}
+
+void TableE(Chip8 *c){
+    c->tableE[c->opcode & 0x000F](c);
+}
+
+void TableF(Chip8 *c){
+    c->tableF[c->opcode & 0x00FF](c);
+}
+
+
+//opcode definitions
 void op_00E0(Chip8 *c) {
     memset(c->video, 0, sizeof(c->video));
 }
@@ -246,9 +339,11 @@ void op_DXYN(Chip8 *c){
     c->registers[0xF] = 0;
 
     for (unsigned int row = 0; row < totalRows; ++row){
+	if (yPos + row >= 32) break;
         uint8_t spriteByte = c->memory[c->index_register + row];
         
         for (unsigned int col = 0; col < 8; ++col){
+	    if (xPos + col >= 64) break;
             uint8_t spritePixel = spriteByte & (0x80 >> col);
             uint8_t *screenPixel = &c->video[(yPos + row) * 64 + (xPos + col)];
 
@@ -263,5 +358,103 @@ void op_DXYN(Chip8 *c){
     }
 }
 
+void op_EX9E(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t key = c->registers[x] & 0xF;
+
+    if(c->keypad[key]){
+	c->program_counter += 2;
+    }
+}
+
+void op_EXA1(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t key = c->registers[x] & 0xF;
+
+    if(!c->keypad[key]){
+	c->program_counter += 2;
+    }
+}
+
+void op_FX07(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    c->registers[x] = c->delay_timer;
+}
+
+void op_FX0A(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    
+    int pressed = -1;
+    for(unsigned int i=0; i<16; ++i){
+	if(c->keypad[i]){ 
+	    pressed = i;
+	    break;
+	}
+    }
+
+    if (pressed >= 0){ 
+	c->registers[x] = pressed;
+    } else
+    {
+	c->program_counter -= 2;
+    }
+}
+
+void op_FX15(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+
+    c->delay_timer = c->registers[x];
+}
+
+void op_FX18(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+
+    c->sound_timer = c->registers[x];
+}
+
+void op_FX1E(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+
+    c->index_register += c->registers[x];
+}
+
+void op_FX29(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t digit = c->registers[x] & 0xF;
+
+    c->index_register = FONTSET_START + (5 * digit); 
+}
+
+void op_FX33(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    uint8_t value = c->registers[x];
+
+    //Ones
+    c->memory[c->index_register + 2] = value % 10;
+    value /= 10;
+
+    //Tens
+    c->memory[c->index_register + 1] = value % 10;
+    value /= 10;
+
+    //Hundreds
+    c->memory[c->index_register] = value % 10;
+}
+
+void op_FX55(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    
+    for(unsigned int i=0; i <= x; ++i){
+	c->memory[c->index_register + i] = c->registers[i];
+    }
+}
+
+void op_FX65(Chip8 *c){
+    uint8_t x = (c->opcode & 0x0F00) >> 8;
+    
+    for(unsigned int i=0; i <= x; ++i){
+	 c->registers[i] = c->memory[c->index_register + i];
+    } 
+}
 
 
